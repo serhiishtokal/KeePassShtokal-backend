@@ -11,9 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E43D1DC5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test1", "test1", "{7F2CBAA3-12D1-425C-9875-B8F793452354}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeePassShtokal.Infrastructure", "KeePassShtokal.Infrastructure\KeePassShtokal.Infrastructure.csproj", "{CCDD0E60-47CC-4BCF-8B87-19FC90228483}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeePassShtokal.Infrastructure", "KeePassShtokal.Infrastructure\KeePassShtokal.Infrastructure.csproj", "{CCDD0E60-47CC-4BCF-8B87-19FC90228483}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeePassShtokal.AppCore", "KeePassShtokal.AppCore\KeePassShtokal.AppCore.csproj", "{5136EF5D-910A-4255-BBB1-966CF13AC4F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeePassShtokal.AppCore", "KeePassShtokal.AppCore\KeePassShtokal.AppCore.csproj", "{5136EF5D-910A-4255-BBB1-966CF13AC4F0}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{15840D03-8D84-4DF0-A831-0E570A6E419E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{5136EF5D-910A-4255-BBB1-966CF13AC4F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5136EF5D-910A-4255-BBB1-966CF13AC4F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5136EF5D-910A-4255-BBB1-966CF13AC4F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15840D03-8D84-4DF0-A831-0E570A6E419E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15840D03-8D84-4DF0-A831-0E570A6E419E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15840D03-8D84-4DF0-A831-0E570A6E419E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15840D03-8D84-4DF0-A831-0E570A6E419E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
