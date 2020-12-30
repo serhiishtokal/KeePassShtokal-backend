@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KeePassShtokal.Infrastructure.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20201229214519_InitMigration")]
+    [Migration("20201230002700_InitMigration")]
     partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,35 +42,12 @@ namespace KeePassShtokal.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserOwnerId")
-                        .HasColumnType("int");
-
                     b.Property<string>("WebAddress")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("EntryId");
 
-                    b.HasIndex("UserOwnerId");
-
                     b.ToTable("Entries");
-                });
-
-            modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.SharedEntry", b =>
-                {
-                    b.Property<int>("EntryId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreationDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("EntryId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SharedEntries");
                 });
 
             modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.User", b =>
@@ -85,7 +62,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
 
                     b.Property<string>("Login")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -97,33 +74,40 @@ namespace KeePassShtokal.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("Login")
-                        .IsUnique();
-
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.Entry", b =>
+            modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.UsersEntries", b =>
                 {
-                    b.HasOne("KeePassShtokal.Infrastructure.Entities.User", "UserOwner")
-                        .WithMany("Entries")
-                        .HasForeignKey("UserOwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("EntryId")
+                        .HasColumnType("int");
 
-                    b.Navigation("UserOwner");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreationDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUserOwner")
+                        .HasColumnType("bit");
+
+                    b.HasKey("EntryId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SharedEntries");
                 });
 
-            modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.SharedEntry", b =>
+            modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.UsersEntries", b =>
                 {
                     b.HasOne("KeePassShtokal.Infrastructure.Entities.Entry", "Entry")
-                        .WithMany("SharedFor")
+                        .WithMany("EntryUsers")
                         .HasForeignKey("EntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("KeePassShtokal.Infrastructure.Entities.User", "User")
-                        .WithMany("SharedEntriesForUser")
+                        .WithMany("UserEntries")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -135,14 +119,12 @@ namespace KeePassShtokal.Infrastructure.Migrations
 
             modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.Entry", b =>
                 {
-                    b.Navigation("SharedFor");
+                    b.Navigation("EntryUsers");
                 });
 
             modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.User", b =>
                 {
-                    b.Navigation("Entries");
-
-                    b.Navigation("SharedEntriesForUser");
+                    b.Navigation("UserEntries");
                 });
 #pragma warning restore 612, 618
         }

@@ -17,8 +17,6 @@ namespace KeePassShtokal.Infrastructure.Entities
         public string Salt { get; set; }
         [Required]
         public bool IsPasswordKeptAsSha { get; set; }
-
-        public virtual ICollection<Entry> Entries { get; set; }
-        public virtual ICollection<SharedEntry> SharedEntriesForUser { get; set; }
+        public virtual ICollection<UsersEntries> UserEntries { get; set; }
     }
 }

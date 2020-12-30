@@ -6,21 +6,24 @@ using System.Text;
 
 namespace KeePassShtokal.Infrastructure.Entities
 {
-    public class SharedEntry
+    public class UsersEntries
     {
-        public SharedEntry()
+        public UsersEntries()
         {
             CreationDateTime = DateTime.UtcNow;
         }
         [Required]
         public DateTime CreationDateTime { get; set; }
         [Required]
+        public bool IsUserOwner { get; set; }
+        [Required]
         public int EntryId { get; set; }
         [Required]
         public int UserId { get; set; }
 
-
+        [ForeignKey(nameof(EntryId))]
         public virtual Entry Entry { get; set; }
+        [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
     }
 }

@@ -13,10 +13,6 @@ namespace KeePassShtokal.Infrastructure.Entities
         public int EntryId { get; set; }
 
         [Required]
-        public int UserOwnerId { get; set; }
-        public virtual User UserOwner { get; set; }
-
-        [Required]
         public string Login { get; set; }
         public string Email { get; set; }
         [Required]
@@ -24,6 +20,6 @@ namespace KeePassShtokal.Infrastructure.Entities
         public string WebAddress { get; set; }
         public string Description { get; set; }
 
-        public virtual ICollection<SharedEntry> SharedFor { get; set; }
+        public virtual ICollection<UsersEntries> EntryUsers { get; set; }
     }
 }
