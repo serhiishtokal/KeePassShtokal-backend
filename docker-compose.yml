@@ -1,28 +1,11 @@
 version: "3.4"
 services:
 
-  mssql-server:
-    container_name: sql-server-db
-    image: mcmoe/mssqldocker:latest
-    restart: always
-    environment:
-      SA_PASSWORD: "Password0!"
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: Developer
-      
-      MSSQL_DB: testDb
-      MSSQL_USER: shtokal
-      MSSQL_PASSWORD: secreT123
-    ports:
-      - "1433:1433"
-
   keepassshtokal:
+    
     image: ${DOCKER_REGISTRY-}keepassshtokal
+    restart: always
+    network_mode: host
     build:
       context: .
       dockerfile: KeePassShtokal/Dockerfile
-    depends_on:
-      - mssql-server
-
-
-

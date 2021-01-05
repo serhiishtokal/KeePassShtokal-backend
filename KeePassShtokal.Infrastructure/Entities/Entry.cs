@@ -13,7 +13,7 @@ namespace KeePassShtokal.Infrastructure.Entities
         public int EntryId { get; set; }
 
         [Required]
-        public string Login { get; set; }
+        public string Username { get; set; }
         public string Email { get; set; }
         [Required]
         public string PasswordE { get; set; }

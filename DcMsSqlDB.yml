@@ -1,0 +1,33 @@
+#for run>: docker-compose -f "DcMsSqlDB.yml" up
+version: "3.4"
+services:
+
+   mssql-server:
+    container_name: sql-server-db
+    image: mcmoe/mssqldocker:latest
+    restart: always
+    environment:
+      SA_PASSWORD: "Password0!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      
+      # (was expected db to be created)
+      MSSQL_DB: testDb
+      MSSQL_USER: shtokal
+      MSSQL_PASSWORD: qwertY123
+    # volumes:
+      # - mssql-volume:/var/opt/mssql
+    #command: /bin/sh -c "(/opt/mssql/bin/sqlservr &) && sleep 20s && /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "Password0!" -d master -Q 'CREATE DATABASE Test' && sleep infinity"
+    # command: /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Password0!' -Q 'CREATE DATABASE TestDB'
+    ports:
+      - "1433:1433"
+    # networks:
+      # - app-network
+      
+# volumes:
+  # mssql-volume:
+    # driver: local
+    # driver_opts:
+      # type: 'none'
+      # o: 'bind'
+      # device: 'DOCKER_VOLUMES/KeepPassMsSQL'

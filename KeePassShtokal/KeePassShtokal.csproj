@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation.AspNetCore" Version="9.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.0" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.1" />
@@ -21,10 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\KeePassShtokal.AppCore\KeePassShtokal.AppCore.csproj" />
     <ProjectReference Include="..\KeePassShtokal.Infrastructure\KeePassShtokal.Infrastructure.csproj" />
   </ItemGroup>
 

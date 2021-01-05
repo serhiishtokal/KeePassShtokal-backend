@@ -10,7 +10,7 @@ namespace KeePassShtokal.Infrastructure.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
         [Required]
-        public string Login { get; set; }
+        public string Username { get; set; }
         [Required]
         public string PasswordHash { get; set; }
         [Required]
