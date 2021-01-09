@@ -12,6 +12,8 @@ namespace KeePassShtokal.Filters
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+
+
             if (!context.ModelState.IsValid)
             {
                 var errorsInModelState = context.ModelState
@@ -29,7 +31,6 @@ namespace KeePassShtokal.Filters
                             FieldName = error.Key,
                             Message = subError
                         };
-
                         errorResponse.Errors.Add(errorModel);
                     }
                 }

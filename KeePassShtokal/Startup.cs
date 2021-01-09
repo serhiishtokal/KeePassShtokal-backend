@@ -9,15 +9,22 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using FluentValidation.AspNetCore;
 using KeePassShtokal.AppCore.Services;
 using KeePassShtokal.Filters;
 using KeePassShtokal.Infrastructure;
-using KeePassShtokal.IoC;
+using KeePassShtokal.Policies;
+using KeePassShtokal.Policies.OnlyOwner;
+using KeePassShtokal.Validators;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace KeePassShtokal
 {
@@ -36,7 +43,7 @@ namespace KeePassShtokal
             //ContainerSetup.Setup(services, Configuration);
             services.AddDbContext<MainDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("ShtokalDb"),
+                options.UseSqlServer(Configuration.GetConnectionString("LocalDb"),
                     x=>x.MigrationsAssembly("KeePassShtokal.Infrastructure"));
             });
 
@@ -55,15 +62,68 @@ namespace KeePassShtokal
                 })
                 .AddFluentValidation(fv =>
                 {
-                    //fv.RegisterValidatorsFromAssemblyContaining<PersonValidator>();
-                    fv.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
+                    fv.RegisterValidatorsFromAssemblyContaining<RegistrationDtoValidator>();
+                    //fv.RunDefaultMvcValidationAfterFluentValidationExecutes = true;
                 });
 
             services.AddScoped<IAuthService, AuthService>();
+            services.AddMemoryCache();
+            services.AddHttpContextAccessor();
+
+            var key = Encoding.UTF8.GetBytes("Mega secret key (Not!)");
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+
+                        ValidIssuer = "https://localhost:44323",
+                        ValidAudience = "https://localhost:44323",
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                    };
+                });
+
 
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "KeePassShtokal", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header
+                    
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+
+                    }
+                });
+
             });
         }
 
@@ -73,6 +133,7 @@ namespace KeePassShtokal
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "KeePassShtokal v1"));
             }
@@ -83,6 +144,7 @@ namespace KeePassShtokal
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

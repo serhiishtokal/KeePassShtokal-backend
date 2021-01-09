@@ -10,7 +10,7 @@ namespace KeePassShtokal.AppCore.Services
 {
     public interface IAuthService
     {
-        Task<Status> Register(RegisterDto registerDto);
+        Task<Status> Register(RegistrationDto registerDto);
         Task<Status> Login(LoginDto loginDto);
 
         //Task<Status> ChangePassword(ChangePasswordDto changePasswordDto);

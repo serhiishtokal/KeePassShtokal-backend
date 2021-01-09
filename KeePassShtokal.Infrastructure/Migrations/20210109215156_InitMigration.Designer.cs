@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KeePassShtokal.Infrastructure.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20210105144648_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210109215156_InitMigration")]
+    partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
