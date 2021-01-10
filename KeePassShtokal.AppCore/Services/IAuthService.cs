@@ -13,6 +13,8 @@ namespace KeePassShtokal.AppCore.Services
         Task<Status> Register(RegistrationDto registerDto);
         Task<Status> Login(LoginDto loginDto);
 
+        Task<Status> ChangePassword(ChangePasswordDto changePasswordDto);
+
         //Task<Status> ChangePassword(ChangePasswordDto changePasswordDto);
         //string PreapreHashPassword(string password, string salt, bool isKeptAsHash);
         //Task<AuthInfoDto> GetAuthInfo(string username);

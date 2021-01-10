@@ -79,5 +79,13 @@ namespace KeePassShtokal.Controllers
             return Ok(login);
 
         }
+
+        [HttpPut("password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            var status = await _authService.ChangePassword(changePasswordDto);
+            return Ok(status);
+        }
     }
 }

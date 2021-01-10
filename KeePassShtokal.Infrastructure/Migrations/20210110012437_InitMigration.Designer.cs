@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KeePassShtokal.Infrastructure.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20210109215156_InitMigration")]
+    [Migration("20210110012437_InitMigration")]
     partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,7 +95,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SharedEntries");
+                    b.ToTable("UsersEntries");
                 });
 
             modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.UsersEntries", b =>

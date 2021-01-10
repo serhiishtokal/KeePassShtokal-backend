@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Threading.Tasks;
 using KeePassShtokal.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,8 +17,9 @@ namespace KeePassShtokal.Infrastructure
 
         public DbSet<User> Users { get; set; }
         public DbSet<Entry> Entries { get; set; }
-        public DbSet<UsersEntries> SharedEntries { get; set; }
+        public DbSet<UsersEntries> UsersEntries { get; set; }
 
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

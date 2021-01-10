@@ -9,6 +9,7 @@ using KeePassShtokal.AppCore.Helpers;
 using KeePassShtokal.Infrastructure;
 using KeePassShtokal.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace KeePassShtokal.AppCore.Services
@@ -70,6 +71,39 @@ namespace KeePassShtokal.AppCore.Services
             //await UpdateIncorrectSignInCount(loginModel.IpAddress, user, false, true);
         }
 
+        public async Task<Status> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            var user = await _mainDbContext.Users.FirstOrDefaultAsync(u => u.Username == changePasswordDto.Username);
+            if (user == null)
+            {
+                return new Status(false, $"User with login {changePasswordDto.Username} not exist");
+            }
+
+            var passwordHash = PrepareHashPassword(changePasswordDto.OldPassword, user.Salt, user.IsPasswordKeptAsSha);
+            if (passwordHash != user.PasswordHash)
+            {
+                return new Status(false, "Wrong old password");
+            }
+
+            try
+            {
+                var memoryCacheKey = $"Password for {user.Username}";
+
+                var newPasswordHash = UpdateUserPassword(changePasswordDto.NewPassword, changePasswordDto.IsPasswordKeptAsHash, user);
+                
+                await UpdateUserWallet(memoryCacheKey, user.UserId, newPasswordHash);
+
+                await _mainDbContext.SaveChangesAsync();
+                _memoryCache.Set(memoryCacheKey, newPasswordHash, DateTime.Now.AddMinutes(60));
+
+                return new Status(true, "Successfully password change");
+            }
+            catch
+            {
+                return new Status(false, "Something went wrong");
+            }
+        }
+
 
         public string PrepareHashPassword(string password, string salt, bool isKeptAsHash)
         {
@@ -114,5 +148,53 @@ namespace KeePassShtokal.AppCore.Services
             });
             return new Status(true, "");
         }
-    }
+
+        private string UpdateUserPassword(string newPassword, bool isPasswordKept, User user)
+        {
+            var newSalt = Guid.NewGuid().ToString();
+            var newPasswordHash = PrepareHashPassword(newPassword, newSalt, isPasswordKept);
+
+            user.Salt = newSalt;
+            user.PasswordHash = newPasswordHash;
+            user.IsPasswordKeptAsSha = isPasswordKept;
+
+            _mainDbContext.Update(user);
+
+            return newPasswordHash;
+        }
+
+        private async Task UpdateUserWallet(string memoryCacheKey, int userId, string newPasswordHash)
+        {
+            _memoryCache.TryGetValue(memoryCacheKey, out string rememberPasswordHash);
+
+            if (rememberPasswordHash == null)
+            {
+                return;
+            }
+
+            var entries= await GetAllUserEntriesQuery(userId).ToListAsync();
+
+            entries.ForEach(entry =>
+            {
+                var oldDecryptedPasswordInWallet = SymmetricEncryptor.DecryptToString(entry.PasswordE, rememberPasswordHash);
+                entry.PasswordE = SymmetricEncryptor.EncryptString(oldDecryptedPasswordInWallet, newPasswordHash);
+            });
+        }
+
+        public IQueryable<Entry> GetAllUserEntriesQuery(int userId)
+        {
+            var entries =
+                from e in _mainDbContext.Entries
+                join ue in
+                    (from usersEntry in _mainDbContext.UsersEntries
+                          where usersEntry.UserId == userId && usersEntry.IsUserOwner == true
+                          select usersEntry.EntryId)
+                    on e.EntryId equals ue
+                select e;
+
+            return entries;
+
+
+        }
+}
 }

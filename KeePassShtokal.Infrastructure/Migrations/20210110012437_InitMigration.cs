@@ -41,7 +41,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SharedEntries",
+                name: "UsersEntries",
                 columns: table => new
                 {
                     EntryId = table.Column<int>(type: "int", nullable: false),
@@ -51,15 +51,15 @@ namespace KeePassShtokal.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SharedEntries", x => new { x.EntryId, x.UserId });
+                    table.PrimaryKey("PK_UsersEntries", x => new { x.EntryId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_SharedEntries_Entries_EntryId",
+                        name: "FK_UsersEntries_Entries_EntryId",
                         column: x => x.EntryId,
                         principalTable: "Entries",
                         principalColumn: "EntryId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_SharedEntries_Users_UserId",
+                        name: "FK_UsersEntries_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
@@ -67,15 +67,15 @@ namespace KeePassShtokal.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_SharedEntries_UserId",
-                table: "SharedEntries",
+                name: "IX_UsersEntries_UserId",
+                table: "UsersEntries",
                 column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "SharedEntries");
+                name: "UsersEntries");
 
             migrationBuilder.DropTable(
                 name: "Entries");

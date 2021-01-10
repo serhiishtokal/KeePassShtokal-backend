@@ -93,7 +93,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SharedEntries");
+                    b.ToTable("UsersEntries");
                 });
 
             modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.UsersEntries", b =>

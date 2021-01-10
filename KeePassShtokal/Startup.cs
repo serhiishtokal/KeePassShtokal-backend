@@ -44,7 +44,8 @@ namespace KeePassShtokal
             services.AddDbContext<MainDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("LocalDb"),
-                    x=>x.MigrationsAssembly("KeePassShtokal.Infrastructure"));
+                    x=>x.MigrationsAssembly("KeePassShtokal.Infrastructure"))
+                    .EnableSensitiveDataLogging();
             });
 
             services.AddCors(options =>
