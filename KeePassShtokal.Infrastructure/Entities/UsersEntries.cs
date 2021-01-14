@@ -22,8 +22,8 @@ namespace KeePassShtokal.Infrastructure.Entities
         public int UserId { get; set; }
 
         [ForeignKey(nameof(EntryId))]
-        public virtual Entry Entry { get; set; }
+        public Entry Entry { get; set; }
         [ForeignKey(nameof(UserId))]
-        public virtual User User { get; set; }
+        public User User { get; set; }
     }
 }

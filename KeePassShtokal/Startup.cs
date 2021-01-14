@@ -1,29 +1,19 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using FluentValidation.AspNetCore;
 using KeePassShtokal.AppCore.Services;
 using KeePassShtokal.Filters;
 using KeePassShtokal.Infrastructure;
-using KeePassShtokal.Policies;
-using KeePassShtokal.Policies.OnlyOwner;
 using KeePassShtokal.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.IdentityModel.Tokens;
 
 namespace KeePassShtokal
@@ -68,6 +58,8 @@ namespace KeePassShtokal
                 });
 
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IEntryService, EntryService>();
+
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
 

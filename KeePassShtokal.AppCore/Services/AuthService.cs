@@ -67,7 +67,7 @@ namespace KeePassShtokal.AppCore.Services
             }
 
             var userPasswordStatus =  CheckUserPassword(user, loginDto);
-            return !userPasswordStatus.Success ? userPasswordStatus : new Status(true, TokenHelper.GetToken(user));
+            return !userPasswordStatus.Success ? userPasswordStatus : new Status(true, "Bearer "+TokenHelper.GetToken(user));
             //await UpdateIncorrectSignInCount(loginModel.IpAddress, user, false, true);
         }
 
