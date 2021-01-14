@@ -27,11 +27,11 @@ namespace KeePassShtokal.Infrastructure
             {
                 sharedEntry.HasKey(se => new {se.EntryId, se.UserId});
                 //sharedEntry.HasOne(se => se.User).WithMany(u => u.SharedEntriesForUser).OnDelete(DeleteBehavior.Cascade);
-                sharedEntry.HasOne(se => se.User)
-                    .WithMany(u => u.UserEntries);
+                //sharedEntry.HasOne(se => se.User)
+                //    .WithMany(u => u.UserEntries);
 
-                sharedEntry.HasOne(se => se.Entry)
-                    .WithMany(e => e.EntryUsers);
+                //sharedEntry.HasOne(se => se.Entry)
+                //    .WithMany(e => e.EntryUsers);
             });
 
         }

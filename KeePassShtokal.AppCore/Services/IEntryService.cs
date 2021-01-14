@@ -11,5 +11,7 @@ namespace KeePassShtokal.AppCore.Services
     public interface IEntryService
     {
         Task<Status> AddEntry(AddEntryDto addPasswordModel, int userId);
+
+        Task<Status> EditEntry(EditEntryDto editEntryDto, int userId);
     }
 }

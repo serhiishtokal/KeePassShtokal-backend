@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using KeePassShtokal.AppCore.DTOs;
 using KeePassShtokal.AppCore.Services;
+using KeePassShtokal.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ namespace KeePassShtokal.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [CustomAuthorize]
     public class EntryController : ControllerBase
     {
         private readonly IEntryService _entryService;
@@ -23,45 +25,29 @@ namespace KeePassShtokal.Controllers
             _entryService = entryService;
         }
 
+        private int GetUserId()
+        {
+            return (int)HttpContext.Items["userId"];
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddEntry([FromBody] AddEntryDto addPasswordModel)
         {
-            if (HttpContext.User.Identity is ClaimsIdentity identity)
-            {
-                try
-                {
-                    var userId = int.Parse(identity.FindFirst(ClaimTypes.NameIdentifier).Value);
-                    var status = await _entryService.AddEntry(addPasswordModel, userId);
-                    return Ok(status);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    return StatusCode(StatusCodes.Status500InternalServerError);
-                }
-            }
-            return BadRequest();
+            var userId = GetUserId();
+            var status = await _entryService.AddEntry(addPasswordModel, userId);
+            return Ok(status);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> EditEntry([FromBody] AddEntryDto addPasswordModel)
-        //{
-        //    if (HttpContext.User.Identity is ClaimsIdentity identity)
-        //    {
-        //        try
-        //        {
-        //            var userId = int.Parse(identity.FindFirst(ClaimTypes.NameIdentifier).Value);
-        //            var status = await _entryService.AddEntry(addPasswordModel, userId);
-        //            return Ok(status);
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            Console.WriteLine(e);
-        //            return StatusCode(StatusCodes.Status500InternalServerError);
-        //        }
-        //    }
-        //    return BadRequest();
-        //}
-
+        [HttpPut]
+        public async Task<IActionResult> EditEntry([FromBody] EditEntryDto editEntryDto)
+        {
+            var userId = GetUserId();
+            var result = await _entryService.EditEntry(editEntryDto, userId);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }
