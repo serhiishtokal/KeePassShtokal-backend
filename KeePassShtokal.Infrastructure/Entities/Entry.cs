@@ -11,7 +11,8 @@ namespace KeePassShtokal.Infrastructure.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int EntryId { get; set; }
-
+        [Required]
+        public string UserOwnerUsername { get; set; }
         [Required]
         public string Username { get; set; }
         public string Email { get; set; }

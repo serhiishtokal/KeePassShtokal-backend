@@ -49,5 +49,31 @@ namespace KeePassShtokal.Controllers
             }
             return BadRequest(result);
         }
+
+        [HttpDelete("entry/{entryId}")]
+        public async Task<IActionResult> DeletePassword([FromRoute] int entryId)
+        {
+            var result = await _entryService.DeleteEntry(entryId, GetUserId());
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllEntries()
+        {
+            try
+            {
+                return Ok(await _entryService.GetAll(GetUserId()));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return StatusCode(500);
+            }
+            
+        }
     }
 }

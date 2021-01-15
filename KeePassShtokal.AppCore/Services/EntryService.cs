@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using KeePassShtokal.AppCore.DTOs;
 using KeePassShtokal.AppCore.Helpers;
 using KeePassShtokal.Infrastructure;
@@ -34,6 +35,7 @@ namespace KeePassShtokal.AppCore.Services
 
             var newEntry = new Entry
             {
+                UserOwnerUsername = user.Username,
                 Username = addEntryDto.Username,
                 PasswordE = passwordE,
                 Description = addEntryDto.Description,
@@ -72,6 +74,7 @@ namespace KeePassShtokal.AppCore.Services
             }
 
         }
+
 
         public async Task<Status> EditEntry(EditEntryDto editEntryDto, int userId)
         {
@@ -121,6 +124,67 @@ namespace KeePassShtokal.AppCore.Services
             }
 
             
+        }
+
+        public async Task<Status> DeleteEntry(int entryId, int userId)
+        {
+
+            var userEntry =
+                await _mainDbContext.UsersEntries
+                    .Include(x=>x.Entry)
+                    .Include(x=>x.User)
+                    .FirstOrDefaultAsync(ue =>
+                    ue.EntryId == entryId && ue.UserId == userId);
+
+            if(userEntry==null) return new Status(false, $"Cannot find entry with id: {entryId}");
+
+            if (!userEntry.IsUserOwner) return new Status(false, "You cannot edit shared for you entry");
+
+            try
+            {
+                var entryToRemove = _mainDbContext.Entries.Remove(userEntry.Entry);
+                await _mainDbContext.SaveChangesAsync();
+                return new Status
+                {
+                    Success = true,
+                    Message = $"Successfully removed entry with Id={entryId} from entries!"
+                };
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new Status
+                {
+                    Success = false,
+                    Message = "Something went wrong"
+                };
+            }
+            
+        }
+
+        public async Task<IEnumerable<GetEntryDto>> GetAll(int userId)
+        {
+
+            var userEntries = await _mainDbContext.UsersEntries
+                .Include(x => x.Entry).Where(x => x.UserId == userId)
+                .Select(x => new GetEntryDto
+                {
+                    EntryId = x.EntryId,
+                    IsOwner = x.IsUserOwner,
+                    UserOwnerUsername = x.Entry.UserOwnerUsername,
+                    Username = x.Entry.Username,
+                    Email = x.Entry.Email,
+                    PasswordEncrypted = x.Entry.PasswordE,
+                    WebAddress = x.Entry.WebAddress,
+                    Description = x.Entry.Description
+                }).ToListAsync();
+
+            //var getEntryDto = _mapper.Map<GetEntryDto>(userEntries[0]);
+
+            //var getEntryDto = _mapper.Map<List<UsersEntries>, IEnumerable<GetEntryDto>>(userEntries);
+
+
+            return userEntries;
         }
     }
 }

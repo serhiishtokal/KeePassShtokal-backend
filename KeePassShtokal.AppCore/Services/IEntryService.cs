@@ -13,5 +13,9 @@ namespace KeePassShtokal.AppCore.Services
         Task<Status> AddEntry(AddEntryDto addPasswordModel, int userId);
 
         Task<Status> EditEntry(EditEntryDto editEntryDto, int userId);
+
+        Task<Status> DeleteEntry(int entryId, int userId);
+
+        Task<IEnumerable<GetEntryDto>> GetAll(int userId);
     }
 }
