@@ -74,8 +74,6 @@ namespace KeePassShtokal.AppCore.Services
             }
 
         }
-
-
         public async Task<Status> EditEntry(EditEntryDto editEntryDto, int userId)
         {
             var owner = await _mainDbContext.Users.FirstOrDefaultAsync(user => user.UserId == userId);
@@ -125,7 +123,6 @@ namespace KeePassShtokal.AppCore.Services
 
             
         }
-
         public async Task<Status> DeleteEntry(int entryId, int userId)
         {
 
@@ -161,7 +158,6 @@ namespace KeePassShtokal.AppCore.Services
             }
             
         }
-
         public async Task<IEnumerable<GetEntryDto>> GetAll(int userId)
         {
 
@@ -185,6 +181,26 @@ namespace KeePassShtokal.AppCore.Services
 
 
             return userEntries;
+        }
+        public async Task<Status> GetEntryPassword(int userId, int entryId)
+        {
+            var userEntries = await _mainDbContext.UsersEntries
+                .Include(x => x.Entry)
+                .Where(x => x.EntryId == entryId && x.UserId==userId)
+                .FirstOrDefaultAsync();
+            if(userEntries==null) return  new Status{Success = false, Message = "No entry founded"};
+
+
+            var userOwnerHash= await _mainDbContext.UsersEntries
+                .Include(x => x.User)
+                .Where(x => x.EntryId == entryId && x.IsUserOwner==true)
+                .Select(x=>x.User.PasswordHash)
+                .FirstOrDefaultAsync();
+
+
+            var password = SymmetricEncryptor.DecryptToString(userEntries.Entry.PasswordE, userOwnerHash);
+
+            return new Status{Success = true, Message = password};
         }
     }
 }

@@ -17,5 +17,7 @@ namespace KeePassShtokal.AppCore.Services
         Task<Status> DeleteEntry(int entryId, int userId);
 
         Task<IEnumerable<GetEntryDto>> GetAll(int userId);
+
+        Task<Status> GetEntryPassword(int userId, int entryId);
     }
 }

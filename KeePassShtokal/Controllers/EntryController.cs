@@ -73,6 +73,17 @@ namespace KeePassShtokal.Controllers
                 Console.WriteLine(e);
                 return StatusCode(500);
             }
+        }
+
+        [HttpGet("getEntryPassword/{entryId}")]
+        public async Task<IActionResult> GetDecryptedPassword([FromRoute] int entryId)
+        {
+           
+               var status = await _entryService.GetEntryPassword(GetUserId(),entryId);
+               if (status.Success)
+                   return Ok(status.Message);
+               
+               return BadRequest(status);
             
         }
     }
