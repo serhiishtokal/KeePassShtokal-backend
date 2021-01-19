@@ -8,8 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using KeePassShtokal.AppCore.DTOs;
 using KeePassShtokal.AppCore.Services;
+using KeePassShtokal.Filters;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace KeePassShtokal.Controllers
 {
@@ -39,22 +41,14 @@ namespace KeePassShtokal.Controllers
         }
 
         [HttpPost("sigin")]
+        //todo add login mode
         public async Task<IActionResult> Login([FromBody] BaseAuthDto loginDto)
         {
-            var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress;
-            string result = "";
-            if (remoteIpAddress != null)
-            {
-                if (remoteIpAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-                {
-                    remoteIpAddress = (await System.Net.Dns.GetHostEntryAsync(remoteIpAddress)).AddressList
-                        .First(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                }
-                result = remoteIpAddress.ToString();
-            }
+            var ipAddress=GetRemoteIpAddress(Request);
+
             var model = new LoginDto
             {
-                IpAddress = result,
+                IpAddress = ipAddress,
                 Username = loginDto.Username,
                 Password = loginDto.Password
             };
@@ -66,10 +60,10 @@ namespace KeePassShtokal.Controllers
 
             return Ok(status);
         }
-
-
+        
         [HttpGet("info")]
         [Authorize]
+        [CustomAuthorize]
         public IActionResult GetUserLoginInfo(CancellationToken cancellationToken)
         {
             if (!(HttpContext.User.Identity is ClaimsIdentity identity)) return BadRequest();
@@ -82,10 +76,46 @@ namespace KeePassShtokal.Controllers
 
         [HttpPut("password")]
         [Authorize]
+        [CustomAuthorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
-            var status = await _authService.ChangePassword(changePasswordDto);
+            var status = await _authService.ChangePassword(changePasswordDto,GetUserId(HttpContext));
             return Ok(status);
+        }
+
+        [HttpGet("ip/blocked")]
+        [Authorize]
+        [CustomAuthorize]
+        public async Task<IActionResult> GetBlockedIps()
+        {
+            var status = await _authService.GetBlockedIps(GetUserId(HttpContext));
+            return Ok(status);
+        }
+
+        [HttpPut("ip/unblock/{ipId}")]
+        [Authorize]
+        [CustomAuthorize]
+        public async Task<IActionResult> UnblockIp([FromRoute] int ipId)
+        {
+            var status = await _authService.UnBlockIp(GetUserId(HttpContext), ipId);
+            return Ok(status);
+        }
+
+        //remove to helper
+        private string GetRemoteIpAddress(HttpRequest request)
+        {
+            var remoteIpAddress = request.HttpContext.Connection.RemoteIpAddress;
+            var result = "";
+            if (remoteIpAddress != null)
+            {
+                result = remoteIpAddress.ToString();
+            }
+            return result;
+        }
+
+        private int GetUserId(HttpContext httpContext)
+        {
+            return (int)httpContext.Items["userId"];
         }
     }
 }

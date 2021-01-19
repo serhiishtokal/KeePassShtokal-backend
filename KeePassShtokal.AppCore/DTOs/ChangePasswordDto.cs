@@ -6,7 +6,6 @@ namespace KeePassShtokal.AppCore.DTOs
 {
     public class ChangePasswordDto
     {
-        public string Username { get; set; }
         public string OldPassword { get; set; }
         public string NewPassword { get; set; }
         public bool IsPasswordKeptAsHash { get; set; }

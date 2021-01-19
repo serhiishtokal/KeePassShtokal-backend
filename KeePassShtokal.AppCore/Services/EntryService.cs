@@ -32,7 +32,7 @@ namespace KeePassShtokal.AppCore.Services
             }
             
             var passwordE = SymmetricEncryptor.EncryptString(addEntryDto.PasswordDecrypted, user.PasswordHash);
-
+            //todo: add auto mapper
             var newEntry = new Entry
             {
                 UserOwnerUsername = user.Username,
@@ -160,7 +160,7 @@ namespace KeePassShtokal.AppCore.Services
         }
         public async Task<IEnumerable<GetEntryDto>> GetAll(int userId)
         {
-
+            //todo: add auto mapper 
             var userEntries = await _mainDbContext.UsersEntries
                 .Include(x => x.Entry).Where(x => x.UserId == userId)
                 .Select(x => new GetEntryDto
