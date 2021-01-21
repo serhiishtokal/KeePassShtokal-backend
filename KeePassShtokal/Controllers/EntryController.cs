@@ -31,6 +31,7 @@ namespace KeePassShtokal.Controllers
         }
 
         [HttpPost]
+        [OnlyWriteMode("You cannot create entry in readonly mode")]
         public async Task<IActionResult> AddEntry([FromBody] AddEntryDto addPasswordModel)
         {
             var userId = GetUserId();
@@ -39,6 +40,7 @@ namespace KeePassShtokal.Controllers
         }
 
         [HttpPut]
+        [OnlyWriteMode("You cannot edit entry in readonly mode")]
         public async Task<IActionResult> EditEntry([FromBody] EditEntryDto editEntryDto)
         {
             var userId = GetUserId();
@@ -51,6 +53,7 @@ namespace KeePassShtokal.Controllers
         }
 
         [HttpDelete("entry/{entryId}")]
+        [OnlyWriteMode("You cannot delete entry in readonly mode")]
         public async Task<IActionResult> DeletePassword([FromRoute] int entryId)
         {
             var result = await _entryService.DeleteEntry(entryId, GetUserId());

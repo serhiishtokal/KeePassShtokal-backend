@@ -10,7 +10,7 @@ namespace KeePassShtokal.AppCore.Helpers
 {
     public static class TokenHelper
     {
-        public static string GetToken(User user)
+        public static string GetToken(User user, bool isReadMode=false)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Mega secret key (Not!)"));
             var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha512);
@@ -19,6 +19,7 @@ namespace KeePassShtokal.AppCore.Helpers
             {
                 new Claim(JwtRegisteredClaimNames.GivenName, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(type:"IsReadMode",value:isReadMode.ToString())
             };
 
             var tokenOptions = new JwtSecurityToken(

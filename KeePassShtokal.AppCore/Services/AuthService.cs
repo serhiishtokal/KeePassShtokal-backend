@@ -116,7 +116,7 @@ namespace KeePassShtokal.AppCore.Services
                 }
 
 
-                var jwToken = TokenHelper.GetToken(user);
+                var jwToken = TokenHelper.GetToken(user, loginDto.IsReadMode);
                 return new Status(true, "Bearer " + jwToken);
             }
         }

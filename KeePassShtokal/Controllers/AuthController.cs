@@ -43,17 +43,18 @@ namespace KeePassShtokal.Controllers
 
         [HttpPost("sigin")]
         //todo add login mode
-        public async Task<IActionResult> Login([FromBody] BaseAuthDto loginDto)
+        public async Task<IActionResult> Login([FromBody] BaseAuthDto baseAuthDto)
         {
             var ipAddress=GetRemoteIpAddress(Request);
 
-            var model = new LoginDto
+            var loginDto = new LoginDto
             {
                 IpAddress = ipAddress,
-                Username = loginDto.Username,
-                Password = loginDto.Password
+                Username = baseAuthDto.Username,
+                Password = baseAuthDto.Password,
+                IsReadMode = baseAuthDto.IsReadMode
             };
-            var status = await _authService.Login(model);
+            var status = await _authService.Login(loginDto);
             if (!status.Success)
             {
                 return BadRequest(status);
@@ -82,6 +83,7 @@ namespace KeePassShtokal.Controllers
         [HttpPut("password")]
         [Authorize]
         [CustomAuthorize]
+        [OnlyWriteMode("You cannot change password in readonly mode")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             var status = await _authService.ChangePassword(changePasswordDto,GetUserId(HttpContext));
@@ -121,6 +123,11 @@ namespace KeePassShtokal.Controllers
         private int GetUserId(HttpContext httpContext)
         {
             return (int)httpContext.Items["userId"];
+        }
+
+        private bool IsReadMode(HttpContext httpContext)
+        {
+            return (bool) httpContext.Items["IsReadMode"];
         }
     }
 }
