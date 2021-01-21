@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using AutoMapper;
-using KeePassShtokal.AppCore.DTOs;
+using KeePassShtokal.AppCore.DTOs.Entry;
 using KeePassShtokal.AppCore.Helpers;
 using KeePassShtokal.Infrastructure;
 using KeePassShtokal.Infrastructure.Entities;

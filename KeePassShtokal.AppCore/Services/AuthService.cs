@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Transactions;
-using KeePassShtokal.AppCore.DTOs;
+using KeePassShtokal.AppCore.DTOs.Auth;
 using KeePassShtokal.AppCore.Helpers;
 using KeePassShtokal.AppCore.Helpers.Extensions;
 using KeePassShtokal.Infrastructure;
 using KeePassShtokal.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace KeePassShtokal.AppCore.Services

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using KeePassShtokal.AppCore.DTOs;
+using KeePassShtokal.AppCore.DTOs.Entry;
 using KeePassShtokal.AppCore.Helpers;
 
 namespace KeePassShtokal.AppCore.Services

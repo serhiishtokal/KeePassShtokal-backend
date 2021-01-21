@@ -1,4 +1,4 @@
-﻿namespace KeePassShtokal.AppCore.DTOs
+﻿namespace KeePassShtokal.AppCore.DTOs.Auth
 {
     public class RegistrationDto : BaseAuthDto
     {

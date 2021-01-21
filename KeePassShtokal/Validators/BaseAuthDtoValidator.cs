@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentValidation;
-using KeePassShtokal.AppCore.DTOs;
+﻿using FluentValidation;
+using KeePassShtokal.AppCore.DTOs.Auth;
 
 namespace KeePassShtokal.Validators
 {

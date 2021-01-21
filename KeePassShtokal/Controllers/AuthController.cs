@@ -1,16 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
-using KeePassShtokal.AppCore.DTOs;
+using KeePassShtokal.AppCore.DTOs.Auth;
 using KeePassShtokal.AppCore.Helpers;
 using KeePassShtokal.AppCore.Services;
 using KeePassShtokal.Filters;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 

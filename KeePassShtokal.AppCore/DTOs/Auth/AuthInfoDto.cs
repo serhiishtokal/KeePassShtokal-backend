@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace KeePassShtokal.AppCore.DTOs
+namespace KeePassShtokal.AppCore.DTOs.Auth
 {
     public class AuthInfoDto
     {

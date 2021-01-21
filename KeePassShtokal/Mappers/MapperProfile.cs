@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using KeePassShtokal.AppCore.DTOs;
+using KeePassShtokal.AppCore.DTOs.Entry;
 using KeePassShtokal.Infrastructure.Entities;
 
 namespace KeePassShtokal.Mappers

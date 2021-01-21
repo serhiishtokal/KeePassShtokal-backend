@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
-namespace KeePassShtokal.AppCore.DTOs
+namespace KeePassShtokal.AppCore.DTOs.Auth
 {
     public class BlockedIpDto
     {

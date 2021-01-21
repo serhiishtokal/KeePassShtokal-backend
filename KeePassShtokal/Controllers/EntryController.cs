@@ -1,15 +1,9 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
-using KeePassShtokal.AppCore.DTOs;
+using KeePassShtokal.AppCore.DTOs.Entry;
 using KeePassShtokal.AppCore.Services;
 using KeePassShtokal.Filters;
-using KeePassShtokal.Validators;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KeePassShtokal.Controllers
