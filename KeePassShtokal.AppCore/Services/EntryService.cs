@@ -202,5 +202,55 @@ namespace KeePassShtokal.AppCore.Services
 
             return new Status{Success = true, Message = password};
         }
+
+        public async Task<Status> ShareEntry(int givingUserId, string receivingUsername, int entryId)
+        {
+            var userEntry = await _mainDbContext.UsersEntries.
+                FirstOrDefaultAsync(ue => ue.UserId == givingUserId && ue.EntryId==entryId);
+
+            if (userEntry == null)
+            {
+                return new Status(false, "Entry not found");
+            }
+
+            if (!userEntry.IsUserOwner)
+            {
+                return new Status(false, "You are not entry owner");
+            }
+
+            var receivingUser= await _mainDbContext.Users.
+                FirstOrDefaultAsync(ue => ue.Username == receivingUsername);
+
+            if (receivingUser == null)
+            {
+                return new Status(false, $"User with username {receivingUsername} not found");
+            }
+
+            if (receivingUser.UserId == givingUserId)
+            {
+                return new Status(false, $"You cannot share password for yourself");
+            }
+
+            UsersEntries usersEntries = new UsersEntries
+            {
+                CreationDateTime = DateTime.Now,
+                EntryId = entryId,
+                IsUserOwner = false,
+                User = receivingUser
+            };
+
+            
+            try
+            {
+                await _mainDbContext.AddAsync(usersEntries);
+                await _mainDbContext.SaveChangesAsync();
+                return new Status(true, $"The entry successfully shared for user  {receivingUsername}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new Status(false, $"Something went wrong");
+            }
+        }
     }
 }

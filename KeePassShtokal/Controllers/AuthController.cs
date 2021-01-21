@@ -66,11 +66,11 @@ namespace KeePassShtokal.Controllers
         [HttpGet("info")]
         [Authorize]
         [CustomAuthorize]
-        public IActionResult GetUserLoginsInfo(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetUserLoginsInfo()
         {
             try
             {
-                var userLoginInfo = _authService.GetUserLoginInfo(GetUserId(HttpContext));
+                var userLoginInfo = await _authService.GetUserLoginInfo(GetUserId(HttpContext));
                 return Ok(userLoginInfo);
             }
             catch (Exception e)

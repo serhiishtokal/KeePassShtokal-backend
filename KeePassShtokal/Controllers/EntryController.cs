@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using KeePassShtokal.AppCore.DTOs;
 using KeePassShtokal.AppCore.Services;
 using KeePassShtokal.Filters;
+using KeePassShtokal.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,15 @@ namespace KeePassShtokal.Controllers
             return Ok(status);
         }
 
+        [HttpPost("share")]
+        [OnlyWriteMode("You cannot create entry in readonly mode")]
+        public async Task<IActionResult> ShareEntry([FromBody] ShareEntryForUserDto shareEntryForUserDto)
+        {
+            var userId = GetUserId();
+            var status = await _entryService.ShareEntry(userId, shareEntryForUserDto.Username, shareEntryForUserDto.EntryId);
+            return Ok(status);
+        }
+
         [HttpPut]
         [OnlyWriteMode("You cannot edit entry in readonly mode")]
         public async Task<IActionResult> EditEntry([FromBody] EditEntryDto editEntryDto)
@@ -64,7 +74,7 @@ namespace KeePassShtokal.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAllEntries()
         {
             try
@@ -78,7 +88,9 @@ namespace KeePassShtokal.Controllers
             }
         }
 
-        [HttpGet("getEntryPassword/{entryId}")]
+
+
+        [HttpGet("EntryPassword/{entryId}")]
         public async Task<IActionResult> GetDecryptedPassword([FromRoute] int entryId)
         {
             var status = await _entryService.GetEntryPassword(GetUserId(),entryId);
