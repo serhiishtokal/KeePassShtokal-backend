@@ -5,7 +5,18 @@ namespace KeePassShtokal.AppCore.Helpers.Extensions
 {
     public static class UserEntityExtension
     {
-        public static void IncreaseIncorrectAttempts(this User user)
+        public static void UpdateAttempts(this User user, bool isLoginSuccessful)
+        {
+            if (isLoginSuccessful)
+            {
+                user.ResetIncorrectAttempts();
+            }
+            else
+            {
+                user.IncreaseIncorrectAttempts();
+            }
+        }
+        private static void IncreaseIncorrectAttempts(this User user)
         {
             user.IncorrectLoginCount++;
             DateTime? blockToDate = user.IncorrectLoginCount switch
@@ -18,7 +29,7 @@ namespace KeePassShtokal.AppCore.Helpers.Extensions
             user.BlockedTo = blockToDate;
         }
 
-        public static void ResetIncorrectAttempts(this User user)
+        private static void ResetIncorrectAttempts(this User user)
         {
             user.BlockedTo = null;
             user.IncorrectLoginCount = 0;
@@ -28,9 +39,9 @@ namespace KeePassShtokal.AppCore.Helpers.Extensions
         {
             var blockMessage = user.IncorrectLoginCount switch
             {
-                { } n when n >= 4 => "Current user blocked for 2 minutes",
-                { } n when n >= 3 => "Current user blocked for 10 seconds",
-                { } n when n >= 2 => "Current user blocked for 5 seconds",
+                { } n when n >= 4 => "Current user blocked for 2 minutes.",
+                { } n when n >= 3 => "Current user blocked for 10 seconds.",
+                { } n when n >= 2 => "Current user blocked for 5 seconds.",
                 _ => ""
             };
             return blockMessage;

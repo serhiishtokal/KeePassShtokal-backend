@@ -90,7 +90,7 @@ namespace KeePassShtokal.AppCore.Services
                 return new Status(false, "Entry not found");
             }
 
-            if(!userEntry.IsUserOwner) return new Status(false, "You cannot edit shared for you entry");
+            if(!userEntry.IsUserOwner) return new Status(false, "You cannot edit shared for you entry. You have to be an owner for edit.");
 
             try
             {
@@ -135,7 +135,7 @@ namespace KeePassShtokal.AppCore.Services
 
             if(userEntry==null) return new Status(false, $"Cannot find entry with id: {entryId}");
 
-            if (!userEntry.IsUserOwner) return new Status(false, "You cannot edit shared for you entry");
+            if (!userEntry.IsUserOwner) return new Status(false, "You cannot edit shared for you entry. You have to be an owner for delete.");
 
             try
             {

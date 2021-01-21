@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KeePassShtokal.Infrastructure.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20210119004028_LoginAttempts")]
-    partial class LoginAttempts
+    [Migration("20210120233343_LoginAttemptLogger")]
+    partial class LoginAttemptLogger
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -61,12 +61,6 @@ namespace KeePassShtokal.Infrastructure.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<DateTime?>("BlockedTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("IncorrectLoginCount")
-                        .HasColumnType("int");
-
                     b.Property<string>("IpAddressString")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -86,7 +80,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("IpId")
+                    b.Property<int>("IpAddressId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsSuccessful")
@@ -98,7 +92,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
 
                     b.HasKey("LoginTrialId");
 
-                    b.HasIndex("IpId");
+                    b.HasIndex("IpAddressId");
 
                     b.HasIndex("UserId");
 
@@ -138,6 +132,27 @@ namespace KeePassShtokal.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.UserIpAddress", b =>
+                {
+                    b.Property<int>("IpAddressId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("BlockedTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IncorrectLoginCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("IpAddressId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserIpAddresses");
+                });
+
             modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.UsersEntries", b =>
                 {
                     b.Property<int>("EntryId")
@@ -163,7 +178,26 @@ namespace KeePassShtokal.Infrastructure.Migrations
                 {
                     b.HasOne("KeePassShtokal.Infrastructure.Entities.IpAddress", "IpAddress")
                         .WithMany()
-                        .HasForeignKey("IpId")
+                        .HasForeignKey("IpAddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KeePassShtokal.Infrastructure.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("IpAddress");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("KeePassShtokal.Infrastructure.Entities.UserIpAddress", b =>
+                {
+                    b.HasOne("KeePassShtokal.Infrastructure.Entities.IpAddress", "IpAddress")
+                        .WithMany()
+                        .HasForeignKey("IpAddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

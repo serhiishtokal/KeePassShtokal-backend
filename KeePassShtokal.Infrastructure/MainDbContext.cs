@@ -20,6 +20,7 @@ namespace KeePassShtokal.Infrastructure
         public DbSet<UsersEntries> UsersEntries { get; set; }
         public DbSet<IpAddress> IdAddresses { get; set; }
         public DbSet<LoginAttempt> LoginAttempts { get; set; }
+        public DbSet<UserIpAddress> UserIpAddresses { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,14 +28,11 @@ namespace KeePassShtokal.Infrastructure
             modelBuilder.Entity<UsersEntries>(sharedEntry =>
             {
                 sharedEntry.HasKey(se => new {se.EntryId, se.UserId});
-                //sharedEntry.HasOne(se => se.User).WithMany(u => u.SharedEntriesForUser).OnDelete(DeleteBehavior.Cascade);
-                //sharedEntry.HasOne(se => se.User)
-                //    .WithMany(u => u.UserEntries);
-
-                //sharedEntry.HasOne(se => se.Entry)
-                //    .WithMany(e => e.EntryUsers);
             });
-
+            modelBuilder.Entity<UserIpAddress>(userIp =>
+            {
+                userIp.HasKey(ui => new { ui.IpAddressId, ui.UserId });
+            });
         }
     }
 }

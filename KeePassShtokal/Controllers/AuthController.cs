@@ -64,7 +64,7 @@ namespace KeePassShtokal.Controllers
         [HttpGet("info")]
         [Authorize]
         [CustomAuthorize]
-        public IActionResult GetUserLoginInfo(CancellationToken cancellationToken)
+        public IActionResult GetUserInfo(CancellationToken cancellationToken)
         {
             if (!(HttpContext.User.Identity is ClaimsIdentity identity)) return BadRequest();
             var login = identity.FindFirst(JwtRegisteredClaimNames.GivenName).Value;

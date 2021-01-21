@@ -6,23 +6,22 @@ using System.Text;
 
 namespace KeePassShtokal.Infrastructure.Entities
 {
-    //todo 
-    public class LoginAttempt
+    public class UserIpAddress
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int LoginTrialId { get; set; }
-        [Required]
-        public int? UserId { get; set; }
         [Required]
         public int IpAddressId { get; set; }
-        [Required]
-        public DateTime DateTime { get; set; }
-        [Required]
-        public bool IsSuccessful { get; set; }
+
         [ForeignKey(nameof(IpAddressId))]
         public IpAddress IpAddress { get; set; }
+
+        [Required]
+        public int UserId { get; set; }
+
         [ForeignKey(nameof(UserId))]
         public User User { get; set; }
+
+        public DateTime? BlockedTo { get; set; }
+        [Required]
+        public int IncorrectLoginCount { get; set; }
     }
 }

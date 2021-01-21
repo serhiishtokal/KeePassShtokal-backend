@@ -59,43 +59,66 @@ namespace KeePassShtokal.AppCore.Services
 
         public async Task<Status> Login(LoginDto loginDto)
         {
-            var ipAddress= await _mainDbContext.IdAddresses.FirstOrDefaultAsync(u => u.IpAddressString == loginDto.IpAddress);
+            
             var user = await _mainDbContext.Users.FirstOrDefaultAsync(u => u.Username == loginDto.Username);
 
-            if (ipAddress?.BlockedTo > DateTime.Now|| user?.BlockedTo > DateTime.Now)
+            if (user == null)
             {
-                var blockMessage = ipAddress != null ? ipAddress.GenerateBlockMessage()+"\n" : string.Empty;
-                blockMessage += user!=null?user.GenerateBlockMessage()+ "\n" : string.Empty;
-                return new Status(false, blockMessage);
+                return new Status(false, $"Wrong username or password.");
             }
-            if(user==null) return new Status(false, $"Wrong username or password.");
-            var isCorrectLoginData = IsPasswordCorrect(user, loginDto);
+            var userIpAddress = await _mainDbContext.UserIpAddresses
+                .Include(x=>x.IpAddress)
+                .FirstOrDefaultAsync(u => u.User == user && u.IpAddress.IpAddressString==loginDto.IpAddress);
 
-            ipAddress ??= new IpAddress
+            userIpAddress ??= new UserIpAddress
             {
-                IpAddressString = loginDto.IpAddress
+                IpAddress = new IpAddress
+                {
+                    IpAddressString = loginDto.IpAddress
+                },
+                User = user
             };
+            var ipAddress = userIpAddress.IpAddress;
+            {
+                if (userIpAddress.BlockedTo > DateTime.Now || user?.BlockedTo > DateTime.Now)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.Append(userIpAddress.GenerateBlockMessage());
+                    stringBuilder.Append(user.GenerateBlockMessage());
+                    
+                    return new Status(false, stringBuilder.ToString());
+                }
 
-            var attempt = GenerateLoginAttempt(user, ipAddress, isCorrectLoginData);
-            try
-            {
-                await _mainDbContext.AddAsync(attempt);
-                await _mainDbContext.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return new Status(false, "Something went wrong");
-            }
+                var isCorrectLoginData = IsPasswordCorrect(user, loginDto);
+                var attempt = GenerateLoginAttempt(user, ipAddress, isCorrectLoginData);
+                userIpAddress.UpdateAttempts(isCorrectLoginData);
+                user.UpdateAttempts(isCorrectLoginData);
 
-            if (!isCorrectLoginData)
-            {
-                var blockMessage = ipAddress.GenerateBlockMessage() + "\n";
-                blockMessage += user.GenerateBlockMessage();
-                return new Status(false, $"Wrong username or password. \n {blockMessage}");
+                try
+                {
+                    _mainDbContext.Update(userIpAddress);
+                    _mainDbContext.Update(attempt);
+                    await _mainDbContext.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return new Status(false, "Something went wrong");
+                }
+
+                if (!isCorrectLoginData)
+                {
+                    var stringBuilder=new StringBuilder();
+                    stringBuilder.Append(userIpAddress.GenerateBlockMessage());
+                    stringBuilder.Append(user.GenerateBlockMessage());
+
+                    return new Status(false, $"Wrong username or password. \n {stringBuilder}");
+                }
+
+
+                var jwToken = TokenHelper.GetToken(user);
+                return new Status(true, "Bearer " + jwToken);
             }
-            var jwToken = TokenHelper.GetToken(user);
-            return new Status(true, "Bearer "+ jwToken);
         }
 
         public async Task<Status> ChangePassword(ChangePasswordDto changePasswordDto, int userId)
@@ -134,12 +157,12 @@ namespace KeePassShtokal.AppCore.Services
         //todo after entities bug fix
         public async Task<IEnumerable<BlockedIpDto>> GetBlockedIps(int userId)
         {
-            var blockedIps= await _mainDbContext.IdAddresses
+            var blockedIps= await _mainDbContext.UserIpAddresses
                 .Where(x => x.BlockedTo > DateTime.Now)
                 .Select(x => new BlockedIpDto
                 {
-                    AddressId = x.AddressId,
-                    IpAddressString = x.IpAddressString,
+                    AddressId = x.IpAddressId,
+                    IpAddressString = x.IpAddress.IpAddressString,
                     BlockedTo = x.BlockedTo,
                     IncorrectLoginCount = x.IncorrectLoginCount
                 }).ToListAsync();
@@ -149,13 +172,12 @@ namespace KeePassShtokal.AppCore.Services
         //todo after entities bug fix
         public async Task<Status> UnBlockIp(int userId, int ipId)
         {
-           var ip=await _mainDbContext.IdAddresses.FirstOrDefaultAsync(x => x.AddressId == ipId);
-           if(ip==null) return new Status(false, "Ip Not Found");
-           ip.ResetIncorrectAttempts();
+           var userIpAddress=await _mainDbContext.UserIpAddresses.FirstOrDefaultAsync(x => x.IpAddressId == ipId && x.UserId==userId);
+           if(userIpAddress == null) return new Status(false, "Ip Not Found");
+           userIpAddress.Unblock();
 
            try
            {
-               _mainDbContext.Update(ip);
                await _mainDbContext.SaveChangesAsync();
                return new Status(true, "Ip successfully unblocked");
            }
@@ -164,8 +186,6 @@ namespace KeePassShtokal.AppCore.Services
                Console.WriteLine(e);
                return new Status(false, "Something went wrong");
            }
-           
-
         }
 
         private string PrepareHashPassword(string password, string salt, bool isKeptAsHash)
@@ -250,17 +270,6 @@ namespace KeePassShtokal.AppCore.Services
 
         private LoginAttempt GenerateLoginAttempt(User user, IpAddress ipAddress, bool isSuccessful)
         {
-            if (!isSuccessful)
-            {
-                ipAddress.IncreaseIncorrectAttempts();
-                user?.IncreaseIncorrectAttempts();
-            }
-            else
-            {
-                ipAddress.ResetIncorrectAttempts();
-                user.ResetIncorrectAttempts();
-            }
-
             var loginAttempt=new LoginAttempt
             {
                 User=user,

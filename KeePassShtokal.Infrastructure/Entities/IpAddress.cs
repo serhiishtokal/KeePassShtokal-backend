@@ -14,8 +14,5 @@ namespace KeePassShtokal.Infrastructure.Entities
         public int AddressId { get; set; }
         [Required]
         public string IpAddressString { get; set; }
-        public DateTime? BlockedTo { get; set; }
-        [Required]
-        public int IncorrectLoginCount { get; set; }
     }
 }

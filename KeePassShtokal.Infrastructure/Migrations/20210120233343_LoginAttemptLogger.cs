@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace KeePassShtokal.Infrastructure.Migrations
 {
-    public partial class LoginAttempts : Migration
+    public partial class LoginAttemptLogger : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -26,9 +26,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
                 {
                     AddressId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IpAddressString = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BlockedTo = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IncorrectLoginCount = table.Column<int>(type: "int", nullable: false)
+                    IpAddressString = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -42,7 +40,7 @@ namespace KeePassShtokal.Infrastructure.Migrations
                     LoginTrialId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    IpId = table.Column<int>(type: "int", nullable: false),
+                    IpAddressId = table.Column<int>(type: "int", nullable: false),
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsSuccessful = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -50,8 +48,8 @@ namespace KeePassShtokal.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_LoginAttempts", x => x.LoginTrialId);
                     table.ForeignKey(
-                        name: "FK_LoginAttempts_IdAddresses_IpId",
-                        column: x => x.IpId,
+                        name: "FK_LoginAttempts_IdAddresses_IpAddressId",
+                        column: x => x.IpAddressId,
                         principalTable: "IdAddresses",
                         principalColumn: "AddressId",
                         onDelete: ReferentialAction.Cascade);
@@ -63,14 +61,45 @@ namespace KeePassShtokal.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserIpAddresses",
+                columns: table => new
+                {
+                    IpAddressId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    BlockedTo = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IncorrectLoginCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserIpAddresses", x => new { x.IpAddressId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_UserIpAddresses_IdAddresses_IpAddressId",
+                        column: x => x.IpAddressId,
+                        principalTable: "IdAddresses",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserIpAddresses_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_LoginAttempts_IpId",
+                name: "IX_LoginAttempts_IpAddressId",
                 table: "LoginAttempts",
-                column: "IpId");
+                column: "IpAddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LoginAttempts_UserId",
                 table: "LoginAttempts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserIpAddresses_UserId",
+                table: "UserIpAddresses",
                 column: "UserId");
         }
 
@@ -78,6 +107,9 @@ namespace KeePassShtokal.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "LoginAttempts");
+
+            migrationBuilder.DropTable(
+                name: "UserIpAddresses");
 
             migrationBuilder.DropTable(
                 name: "IdAddresses");
