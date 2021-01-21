@@ -17,6 +17,8 @@ namespace KeePassShtokal.AppCore.Services
 
         Task<IEnumerable<BlockedIpDto>> GetBlockedIps(int userId);
         Task<Status> UnBlockIp(int userId, int ip);
+
+        Task<UserLoginInfoDto> GetUserLoginInfo(int userId);
         //Task<Status> ChangePassword(ChangePasswordDto changePasswordDto);
         //string PreapreHashPassword(string password, string salt, bool isKeptAsHash);
         //Task<AuthInfoDto> GetAuthInfo(string username);

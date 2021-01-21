@@ -154,6 +154,32 @@ namespace KeePassShtokal.AppCore.Services
             }
         }
 
+        public async Task<UserLoginInfoDto> GetUserLoginInfo(int userId)
+        {
+
+            var successfulLogin =await _mainDbContext.LoginAttempts
+                .Include(x=>x.IpAddress)
+                .OrderByDescending(l => l.DateTime)
+                .Where(x => x.UserId==userId && x.IsSuccessful)
+                .Select(c => new {c.DateTime, c.IpAddress.IpAddressString})
+                .FirstOrDefaultAsync();
+
+            var unsuccessfulLogin =await _mainDbContext.LoginAttempts
+                .Include(x => x.IpAddress)
+                .OrderByDescending(l => l.DateTime)
+                .Where(x => x.UserId == userId && !x.IsSuccessful)
+                .Select(c => new { c.DateTime, c.IpAddress.IpAddressString })
+                .FirstOrDefaultAsync();
+
+            return new UserLoginInfoDto
+            {
+                LastSuccessfulLoginDateTime = successfulLogin?.DateTime,
+                LastSuccessfulLoginIpAddress = successfulLogin?.IpAddressString,
+                LastUnsuccessfulLoginDateTime = unsuccessfulLogin?.DateTime,
+                LastUnsuccessfulLoginIpAddress = unsuccessfulLogin?.IpAddressString
+            };
+        }
+
         //todo after entities bug fix
         public async Task<IEnumerable<BlockedIpDto>> GetBlockedIps(int userId)
         {

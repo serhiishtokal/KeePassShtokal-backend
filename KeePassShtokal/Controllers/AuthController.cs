@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using KeePassShtokal.AppCore.DTOs;
+using KeePassShtokal.AppCore.Helpers;
 using KeePassShtokal.AppCore.Services;
 using KeePassShtokal.Filters;
 using Microsoft.AspNetCore.Authentication;
@@ -64,14 +65,18 @@ namespace KeePassShtokal.Controllers
         [HttpGet("info")]
         [Authorize]
         [CustomAuthorize]
-        public IActionResult GetUserInfo(CancellationToken cancellationToken)
+        public IActionResult GetUserLoginsInfo(CancellationToken cancellationToken)
         {
-            if (!(HttpContext.User.Identity is ClaimsIdentity identity)) return BadRequest();
-            var login = identity.FindFirst(JwtRegisteredClaimNames.GivenName).Value;
-            //var result = await _authService.GetAuthInfo(login, cancellationToken);
-
-            return Ok(login);
-
+            try
+            {
+                var userLoginInfo = _authService.GetUserLoginInfo(GetUserId(HttpContext));
+                return Ok(userLoginInfo);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest(new Status(false,"Something went wrong"));
+            }
         }
 
         [HttpPut("password")]
