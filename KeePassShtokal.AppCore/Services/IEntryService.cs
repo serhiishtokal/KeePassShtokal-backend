@@ -18,5 +18,9 @@ namespace KeePassShtokal.AppCore.Services
         Task<Status> GetEntryPassword(int userId, int entryId);
 
         Task<Status> ShareEntry(int givingUserId, string receivingUsername, int entryId);
+
+        Task<Status> RestoreState(int actionId, int userId);
+
+        Task<IEnumerable<EntryActionStateDto>> GetEntryActions(int entryId, int userId);
     }
 }

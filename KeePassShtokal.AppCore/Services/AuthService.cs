@@ -269,10 +269,16 @@ namespace KeePassShtokal.AppCore.Services
 
             var entries= await GetAllUserEntriesQuery(userId).ToListAsync();
 
-            entries.ForEach(entry =>
+            var entryStates = await _mainDbContext.EntryActions
+                .Include(x => x.EntryState)
+                .Where(x => x.UserId == userId)
+                .Select(x => x.EntryState).Distinct()
+                .ToListAsync();
+
+            entryStates.ForEach(entryState =>
             {
-                var oldDecryptedPasswordInWallet = SymmetricEncryptor.DecryptToString(entry.PasswordE, rememberPasswordHash);
-                entry.PasswordE = SymmetricEncryptor.EncryptString(oldDecryptedPasswordInWallet, newPasswordHash);
+                var oldDecryptedPasswordInWallet = SymmetricEncryptor.DecryptToString(entryState.PasswordE, rememberPasswordHash);
+                entryState.PasswordE = SymmetricEncryptor.EncryptString(oldDecryptedPasswordInWallet, newPasswordHash);
             });
         }
 

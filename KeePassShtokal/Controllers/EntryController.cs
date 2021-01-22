@@ -43,7 +43,7 @@ namespace KeePassShtokal.Controllers
             return Ok(status);
         }
 
-        [HttpPut]
+        [HttpPut("edit")]
         [OnlyWriteMode("You cannot edit entry in readonly mode")]
         public async Task<IActionResult> EditEntry([FromBody] EditEntryDto editEntryDto)
         {
@@ -56,7 +56,7 @@ namespace KeePassShtokal.Controllers
             return BadRequest(result);
         }
 
-        [HttpDelete("entry/{entryId}")]
+        [HttpDelete("delete/{entryId}")]
         [OnlyWriteMode("You cannot delete entry in readonly mode")]
         public async Task<IActionResult> DeletePassword([FromRoute] int entryId)
         {
@@ -82,9 +82,7 @@ namespace KeePassShtokal.Controllers
             }
         }
 
-
-
-        [HttpGet("EntryPassword/{entryId}")]
+        [HttpGet("decrypt/{entryId}")]
         public async Task<IActionResult> GetDecryptedPassword([FromRoute] int entryId)
         {
             var status = await _entryService.GetEntryPassword(GetUserId(),entryId);
@@ -92,6 +90,30 @@ namespace KeePassShtokal.Controllers
                    return Ok(status.Message);
                
                return BadRequest(status);
+        }
+
+        [HttpPost("restore/{entryActionId}")]
+        public async Task<IActionResult> RestoreState([FromRoute] int entryActionId)
+        {
+            var status = await _entryService.RestoreState(entryActionId, GetUserId());
+            if (status.Success)
+                return Ok(status.Message);
+
+            return BadRequest(status);
+        }
+
+        [HttpGet("history/{entryId}")]
+        public async Task<IActionResult> GetEntryHistory([FromRoute] int entryId)
+        {
+            try
+            {
+                return Ok(await _entryService.GetEntryActions(entryId, GetUserId()));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest();
+            }
         }
     }
 }

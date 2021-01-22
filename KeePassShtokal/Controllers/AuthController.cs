@@ -118,10 +118,5 @@ namespace KeePassShtokal.Controllers
         {
             return (int)httpContext.Items["userId"];
         }
-
-        private bool IsReadMode(HttpContext httpContext)
-        {
-            return (bool) httpContext.Items["IsReadMode"];
-        }
     }
 }

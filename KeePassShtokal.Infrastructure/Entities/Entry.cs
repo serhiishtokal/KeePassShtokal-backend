@@ -14,13 +14,8 @@ namespace KeePassShtokal.Infrastructure.Entities
         [Required]
         public string UserOwnerUsername { get; set; }
         [Required]
-        public string Username { get; set; }
-        public string Email { get; set; }
-        [Required]
-        public string PasswordE { get; set; }
-        public string WebAddress { get; set; }
-        public string Description { get; set; }
-
-        public virtual ICollection<UsersEntries> EntryUsers { get; set; }
+        public int CurrentEntryStateId { get; set; }
+        [ForeignKey(nameof(CurrentEntryStateId))]
+        public EntryState CurrentEntryState { get; set; }
     }
 }

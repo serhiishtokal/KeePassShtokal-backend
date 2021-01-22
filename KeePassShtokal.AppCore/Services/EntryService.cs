@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using KeePassShtokal.AppCore.DTOs.Entry;
 using KeePassShtokal.AppCore.Helpers;
 using KeePassShtokal.Infrastructure;
+using KeePassShtokal.Infrastructure.DefaultData;
 using KeePassShtokal.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -34,25 +36,31 @@ namespace KeePassShtokal.AppCore.Services
             var newEntry = new Entry
             {
                 UserOwnerUsername = user.Username,
+            };
+            var newEntryState = new EntryState
+            {
                 Username = addEntryDto.Username,
                 PasswordE = passwordE,
                 Description = addEntryDto.Description,
                 Email = addEntryDto.Email,
-                WebAddress = addEntryDto.WebAddress
+                WebAddress = addEntryDto.WebAddress,
+                IsDeleted = false
             };
-
+            newEntry.CurrentEntryState = newEntryState;
             var newUserEntry = new UsersEntries
             {
                 IsUserOwner = true,
                 Entry = newEntry,
                 User = user
             };
+            var entryAction = CreateEntryAction(user, newEntryState, newEntry, ActionTypesEnum.Create);
 
-            
 
             try
             {
-                await _mainDbContext.AddAsync(newUserEntry);
+                _mainDbContext.Update(user);
+                _mainDbContext.Update(entryAction);
+                _mainDbContext.Update(newUserEntry);
                 await _mainDbContext.SaveChangesAsync();
                 return new Status
                 {
@@ -81,7 +89,7 @@ namespace KeePassShtokal.AppCore.Services
             }
 
             var userEntry =
-                await _mainDbContext.UsersEntries.Include(p => p.Entry).FirstOrDefaultAsync(x =>
+                await _mainDbContext.UsersEntries.Include(p => p.Entry.CurrentEntryState).FirstOrDefaultAsync(x =>
                     x.EntryId == editEntryDto.EntryId && x.UserId == userId);
             if (userEntry == null)
             {
@@ -92,20 +100,19 @@ namespace KeePassShtokal.AppCore.Services
 
             try
             {
-                var entryToEdit = userEntry.Entry;
-
-                if (!string.IsNullOrEmpty(editEntryDto.PasswordDecrypted))
+                var newEntryState = new EntryState
                 {
-                    entryToEdit.PasswordE = SymmetricEncryptor.EncryptString(editEntryDto.PasswordDecrypted, owner.PasswordHash);
-                }
+                    PasswordE = SymmetricEncryptor.EncryptString(editEntryDto.PasswordDecrypted, owner.PasswordHash),
+                    Username = editEntryDto.Username,
+                    Description = editEntryDto.Description,
+                    Email = editEntryDto.Email,
+                    WebAddress = editEntryDto.WebAddress,
+                    IsDeleted = false
+                };
+                userEntry.Entry.CurrentEntryState = newEntryState;
+                var entryAction = CreateEntryAction(owner, newEntryState, userEntry.Entry, ActionTypesEnum.Edit);
 
-                entryToEdit.Username = editEntryDto.Username;
-                entryToEdit.Description = editEntryDto.Description;
-                entryToEdit.Email = editEntryDto.Email;
-                entryToEdit.WebAddress = editEntryDto.WebAddress;
-
-
-                _mainDbContext.Update(entryToEdit);
+                await _mainDbContext.AddAsync(entryAction);
                 await _mainDbContext.SaveChangesAsync();
                 return new Status(true, "Password has been successfully edited");
             }
@@ -123,21 +130,37 @@ namespace KeePassShtokal.AppCore.Services
         }
         public async Task<Status> DeleteEntry(int entryId, int userId)
         {
-
             var userEntry =
                 await _mainDbContext.UsersEntries
-                    .Include(x=>x.Entry)
+                    .Include(x=>x.Entry.CurrentEntryState)
                     .Include(x=>x.User)
                     .FirstOrDefaultAsync(ue =>
                     ue.EntryId == entryId && ue.UserId == userId);
 
             if(userEntry==null) return new Status(false, $"Cannot find entry with id: {entryId}");
 
-            if (!userEntry.IsUserOwner) return new Status(false, "You cannot edit shared for you entry. You have to be an owner for delete.");
+            if (!userEntry.IsUserOwner) return new Status(false, "You cannot delete shared for you entry. You have to be an owner for delete.");
+
+            var entry = userEntry.Entry;
+            var currentEntryState = entry.CurrentEntryState;
+
+            var newEntryState = new EntryState
+            {
+                PasswordE = currentEntryState.PasswordE,
+                Username = currentEntryState.Username,
+                Description = currentEntryState.Description,
+                Email = currentEntryState.Email,
+                WebAddress = currentEntryState.WebAddress,
+                IsDeleted = true
+            };
+
+            entry.CurrentEntryState = newEntryState;
+
+            var entryAction = CreateEntryAction(userEntry.User, newEntryState, entry, ActionTypesEnum.Delete);
 
             try
             {
-                var entryToRemove = _mainDbContext.Entries.Remove(userEntry.Entry);
+                await _mainDbContext.AddAsync(entryAction);
                 await _mainDbContext.SaveChangesAsync();
                 return new Status
                 {
@@ -156,21 +179,24 @@ namespace KeePassShtokal.AppCore.Services
             }
             
         }
+
         public async Task<IEnumerable<GetEntryDto>> GetAll(int userId)
         {
             //todo: add auto mapper 
             var userEntries = await _mainDbContext.UsersEntries
-                .Include(x => x.Entry).Where(x => x.UserId == userId)
+                .Include(x => x.Entry.CurrentEntryState)
+                .Where(x => x.UserId == userId)
                 .Select(x => new GetEntryDto
                 {
                     EntryId = x.EntryId,
                     IsOwner = x.IsUserOwner,
                     UserOwnerUsername = x.Entry.UserOwnerUsername,
-                    Username = x.Entry.Username,
-                    Email = x.Entry.Email,
-                    PasswordEncrypted = x.Entry.PasswordE,
-                    WebAddress = x.Entry.WebAddress,
-                    Description = x.Entry.Description
+                    Username = x.Entry.CurrentEntryState.Username,
+                    Email = x.Entry.CurrentEntryState.Email,
+                    PasswordEncrypted = x.Entry.CurrentEntryState.PasswordE,
+                    WebAddress = x.Entry.CurrentEntryState.WebAddress,
+                    Description = x.Entry.CurrentEntryState.Description,
+                    IsDeleted = x.Entry.CurrentEntryState.IsDeleted
                 }).ToListAsync();
 
             //var getEntryDto = _mapper.Map<GetEntryDto>(userEntries[0]);
@@ -183,28 +209,47 @@ namespace KeePassShtokal.AppCore.Services
         public async Task<Status> GetEntryPassword(int userId, int entryId)
         {
             var userEntries = await _mainDbContext.UsersEntries
-                .Include(x => x.Entry)
+                .Include(x => x.Entry.CurrentEntryState)
+                .Include(x=>x.User)
                 .Where(x => x.EntryId == entryId && x.UserId==userId)
                 .FirstOrDefaultAsync();
             if(userEntries==null) return  new Status{Success = false, Message = "No entry founded"};
 
-
             var userOwnerHash= await _mainDbContext.UsersEntries
                 .Include(x => x.User)
-                .Where(x => x.EntryId == entryId && x.IsUserOwner==true)
+                .Where(x => x.EntryId == entryId && x.IsUserOwner)
                 .Select(x=>x.User.PasswordHash)
                 .FirstOrDefaultAsync();
 
+            var password = SymmetricEncryptor.DecryptToString(userEntries.Entry.CurrentEntryState.PasswordE, userOwnerHash);
 
-            var password = SymmetricEncryptor.DecryptToString(userEntries.Entry.PasswordE, userOwnerHash);
+            EntryAction newEntryAction = CreateEntryAction(userEntries.User, userEntries.Entry.CurrentEntryState,
+                userEntries.Entry, ActionTypesEnum.View);
 
-            return new Status{Success = true, Message = password};
+            try
+            {
+                await _mainDbContext.AddAsync(newEntryAction);
+                await _mainDbContext.SaveChangesAsync();
+                return new Status { Success = true, Message = password };
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new Status
+                {
+                    Success = false,
+                    Message = "Something went wrong"
+                };
+            }
+
+            
         }
-
         public async Task<Status> ShareEntry(int givingUserId, string receivingUsername, int entryId)
         {
-            var userEntry = await _mainDbContext.UsersEntries.
-                FirstOrDefaultAsync(ue => ue.UserId == givingUserId && ue.EntryId==entryId);
+            var userEntry = await _mainDbContext.UsersEntries
+                .Include(x=> x.Entry.CurrentEntryState)
+                .Include(x=>x.User)
+                .FirstOrDefaultAsync(ue => ue.UserId == givingUserId && ue.EntryId==entryId);
 
             if (userEntry == null)
             {
@@ -237,10 +282,13 @@ namespace KeePassShtokal.AppCore.Services
                 User = receivingUser
             };
 
-            
+            var newEntryAction = CreateEntryAction(userEntry.User, userEntry.Entry.CurrentEntryState, userEntry.Entry,
+                ActionTypesEnum.Share);
+
             try
             {
                 await _mainDbContext.AddAsync(usersEntries);
+                await _mainDbContext.AddAsync(newEntryAction);
                 await _mainDbContext.SaveChangesAsync();
                 return new Status(true, $"The entry successfully shared for user  {receivingUsername}");
             }
@@ -249,6 +297,76 @@ namespace KeePassShtokal.AppCore.Services
                 Console.WriteLine(e);
                 return new Status(false, $"Something went wrong");
             }
+        }
+        private EntryAction CreateEntryAction(User user, EntryState entryState, Entry entry,
+            ActionTypesEnum actionTypesEnum)
+        {
+            var entryAction = new EntryAction
+            {
+                ActionType = actionTypesEnum,
+                Entry = entry,
+                EntryState = entryState,
+                User = user,
+                DateTime = DateTime.Now,
+                IsRestorable = true
+            };
+
+            return entryAction;
+        }
+
+        public async Task<Status> RestoreState(int actionId, int userId)
+        {
+            var entryAction =await _mainDbContext.EntryActions
+                .Include(x => x.Entry.CurrentEntryState)
+                .Include(x => x.EntryState)
+                .Include(x=>x.User)
+                .FirstOrDefaultAsync(x => x.ActionId == actionId);
+
+            if(entryAction==null) return new Status(false, "Action not found");
+
+            if (entryAction.UserId != userId) return new Status(false, "Access denied");
+
+            entryAction.Entry.CurrentEntryState = entryAction.EntryState;
+
+            var newEntryAction = CreateEntryAction(entryAction.User, entryAction.EntryState, entryAction.Entry,
+                ActionTypesEnum.UndoAction);
+
+            try
+            {
+                await _mainDbContext.AddAsync(newEntryAction);
+                await _mainDbContext.SaveChangesAsync();
+                return new Status(true, $"The state successfully restored");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new Status(false, $"Something went wrong");
+            }
+
+        }
+
+        public async Task<IEnumerable<EntryActionStateDto>> GetEntryActions(int entryId, int userId)
+        {
+            var userEntries = await _mainDbContext.EntryActions
+                .Include(x => x.Entry.CurrentEntryState)
+                .Where(x => x.EntryId == entryId &&x.UserId==userId)
+                .Select(x => new EntryActionStateDto
+                {
+                    ActionId = x.ActionId,
+                    EntryId = entryId,
+                    UserId = userId,
+                    DateTime = x.DateTime,
+                    ActionType= x.ActionType,
+                    ActionTypeString = x.ActionType.ToString(),
+                    Username =x.Entry.CurrentEntryState.Username,
+                    Email = x.Entry.CurrentEntryState.Email,
+                    PasswordE = x.Entry.CurrentEntryState.PasswordE,
+                    WebAddress = x.Entry.CurrentEntryState.WebAddress,
+                    Description = x.Entry.CurrentEntryState.Description,
+                    IsDeleted = x.Entry.CurrentEntryState.IsDeleted
+                }).ToListAsync();
+
+            return userEntries;
         }
     }
 }
