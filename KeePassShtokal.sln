@@ -9,11 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9907C753-E5B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E43D1DC5-9CA2-4539-9DDA-1DF3E0B74B51}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test1", "test1", "{7F2CBAA3-12D1-425C-9875-B8F793452354}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeePassShtokal.Infrastructure", "KeePassShtokal.Infrastructure\KeePassShtokal.Infrastructure.csproj", "{CCDD0E60-47CC-4BCF-8B87-19FC90228483}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeePassShtokal.AppCore", "KeePassShtokal.AppCore\KeePassShtokal.AppCore.csproj", "{5136EF5D-910A-4255-BBB1-966CF13AC4F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeePassShtokal.UnitTests", "KeePassShtokal.UnitTests\KeePassShtokal.UnitTests.csproj", "{204AC783-029B-4DFA-923C-FAD81BEF94AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,15 +33,19 @@ Global
 		{5136EF5D-910A-4255-BBB1-966CF13AC4F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5136EF5D-910A-4255-BBB1-966CF13AC4F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5136EF5D-910A-4255-BBB1-966CF13AC4F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{204AC783-029B-4DFA-923C-FAD81BEF94AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{204AC783-029B-4DFA-923C-FAD81BEF94AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{204AC783-029B-4DFA-923C-FAD81BEF94AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{204AC783-029B-4DFA-923C-FAD81BEF94AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{13CA3EF4-76BC-434B-9B76-8CF93A6DC96A} = {9907C753-E5BA-474A-973A-047AF9BA6DAC}
-		{7F2CBAA3-12D1-425C-9875-B8F793452354} = {E43D1DC5-9CA2-4539-9DDA-1DF3E0B74B51}
 		{CCDD0E60-47CC-4BCF-8B87-19FC90228483} = {9907C753-E5BA-474A-973A-047AF9BA6DAC}
 		{5136EF5D-910A-4255-BBB1-966CF13AC4F0} = {9907C753-E5BA-474A-973A-047AF9BA6DAC}
+		{204AC783-029B-4DFA-923C-FAD81BEF94AF} = {E43D1DC5-9CA2-4539-9DDA-1DF3E0B74B51}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2AF02736-3A86-455C-91BE-DA651E6838D4}
