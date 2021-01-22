@@ -271,8 +271,11 @@ namespace KeePassShtokal.AppCore.Services
 
             entries.ForEach(entry =>
             {
-                var oldDecryptedPasswordInWallet = SymmetricEncryptor.DecryptToString(entry.PasswordE, rememberPasswordHash);
-                entry.PasswordE = SymmetricEncryptor.EncryptString(oldDecryptedPasswordInWallet, newPasswordHash);
+                foreach (var entryState in entry.EntryStates)
+                {
+                    var oldDecryptedPasswordInWallet = SymmetricEncryptor.DecryptToString(entryState.PasswordE, rememberPasswordHash);
+                    entryState.PasswordE = SymmetricEncryptor.EncryptString(oldDecryptedPasswordInWallet, newPasswordHash);
+                }
             });
         }
 
